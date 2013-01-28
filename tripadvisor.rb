@@ -112,7 +112,8 @@ generate_records(1)
 select_query = "SELECT pgp_pub_decrypt(partner, keys.privkey) As partnerdecrypt
 FROM pageviews
 CROSS JOIN
-(SELECT dearmor('Version: GnuPG v1.4.11 (GNU/Linux)
+(SELECT dearmor('-----BEGIN PGP PRIVATE KEY BLOCK-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
 lQO+BFEGSTUBCAClyR//8WYCfmG1MfBPV1lLsClq3nBQZDlZk/LJY+BBs538j2kL
 Ew+2YCcn8DwdXepFN5WMSDytLwBB7bKZxzIap7lQAVgqY/KJRB9edjrq89s6JC3a
