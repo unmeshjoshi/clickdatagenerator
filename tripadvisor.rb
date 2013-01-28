@@ -19,7 +19,7 @@ def generate_records(no_of_records)
                   "'" + no_of_clicks + "'" +
                   ") As robotccs(id, clickdate, hour, silo, partner, bucket, locationid, clicks)" +
                   " CROSS JOIN (SELECT dearmor('-----BEGIN PGP PUBLIC KEY BLOCK----- \n" +
-                  "Version: GnuPG v1.4.11 (GNU/Linux) \n" +
+                  "Version: GnuPG v1.4.11 (GNU/Linux) \n\n" +
 
 "mI0EUQQk0AEEAMV7FI5Kyis+AeBjJZaXu4S6ygfS1nh4hgU+u4Ss6ynQJ+TEltzt
 +dt0pPCcVOJg94gIRhiaQrf0dR4ffXQU5tihNs38xo6UCd9U4MLSKjQHUwasw622
