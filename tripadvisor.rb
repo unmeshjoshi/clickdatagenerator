@@ -47,7 +47,7 @@ a9z/BVfb4pwXDN5sOpgjEXdZhzxTHf0CDpNBUsx3Hqo598zPwYZToF/CR6qorlYQ
 IFoRMle3aivpwXFYvRIBFohr1UoNvfKtc7RWa3RHTFNMJMk0bbWAbZimGEExlnbH
 NwrEaw==\n
 =hLlu" +
-          "\n-----END PGP PUBLIC KEY BLOCK-----') As pubkey) As keys;" )
+"\n-----END PGP PUBLIC KEY BLOCK-----') As pubkey) As keys;" )
 
     $i +=1
   end
@@ -109,7 +109,7 @@ generate_records(1)
 
 
 
-select_query = "SELECT pgp_pub_decrypt(partner, keys.privkey) As partnerdecrypt
+select_query = "SELECT pgp_pub_decrypt(partner, keys.privkey, 'password') As partnerdecrypt
 FROM pageviews
 CROSS JOIN
 (SELECT dearmor('-----BEGIN PGP PRIVATE KEY BLOCK-----
