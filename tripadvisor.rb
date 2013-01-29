@@ -1,24 +1,35 @@
 require 'date'
 
-def generate_records(no_of_records)
-  partners = %w(Marriott  Hotels  Room77  ORBITZ  Priceline  Booking  Expedia  Tingo)
-
-  file = open_file("tripadvisor.sql")
-  $i = 0
-  while $i < no_of_records do
+def values_expression(counts_per_insert, partners, values)
+  values = "(VALUES "
+  $count = 0;
+  while $count < counts_per_insert do
     partner = get_random partners
     date_in_last_month = date_in_last_month()
-    file.puts("insert into pageviews (id, clickdate, hour, silo, partner, bucket, locationid, clicks)" +
-                  "SELECT robotccs.id, robotccs.clickdate, robotccs.hour, pgp_pub_encrypt(robotccs.silo, keys.pubkey) As silo," +
-                  " pgp_pub_encrypt(robotccs.partner, keys.pubkey) As partner," +
-                 "pgp_pub_encrypt(robotccs.bucket, keys.pubkey) As bucket, robotccs.locationid, pgp_pub_encrypt(robotccs.clicks, keys.pubkey) As clicks " +
-                " FROM (VALUES (" + $i.to_s + "," + "'" + date_in_last_month + "'," + "'" + hour + "','" + solo + "'," +
-                  "'" + partner + "'," +
-                  "'" + bucket + "'," +
-                  "'" + location_id + "'," +
-                  "'" + no_of_clicks + "'" +
-                  ")) As robotccs(id, clickdate, hour, silo, partner, bucket, locationid, clicks)" +
-                  " CROSS JOIN (SELECT dearmor('-----BEGIN PGP PUBLIC KEY BLOCK-----
+    separator = $count == 0 ? "" : ","
+    values = values + separator + " (" + $i.to_s + "," + "'" + date_in_last_month + "'," + "'" + hour + "','" + solo + "'," +
+        "'" + partner + "'," +
+        "'" + bucket + "'," +
+        "'" + location_id + "'," +
+        "'" + no_of_clicks + "'" +
+        ")"
+  $count += 1
+  end
+
+  end_values_statement = ") As robotccs(id, clickdate, hour, silo, partner, bucket, locationid, clicks)"
+  return values + end_values_statement
+end
+
+def insert_statement
+  "insert into pageviews (id, clickdate, hour, silo, partner, bucket, locationid, clicks)" +
+      "SELECT robotccs.id, robotccs.clickdate, robotccs.hour, pgp_pub_encrypt(robotccs.silo, keys.pubkey) As silo," +
+      " pgp_pub_encrypt(robotccs.partner, keys.pubkey) As partner," +
+      "pgp_pub_encrypt(robotccs.bucket, keys.pubkey) As bucket, robotccs.locationid, pgp_pub_encrypt(robotccs.clicks, keys.pubkey) As clicks " +
+      " FROM "
+end
+
+def public_key_cross_join
+  " CROSS JOIN (SELECT dearmor('-----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1.4.12 (Darwin)
 
 mQENBFEC7kQBCADh/4cNY+zPurURXpXKZdv58mkbTyZuhM4r85wERDBTHQ9xnMSm
@@ -47,9 +58,21 @@ Ho4vTzAyXlQoLihxMFpFmWHa8hJEhczGB7y1Mn4YqeEv6bxlMQM3aNvJKO1mz2Pp
 GnCOxehnbnXiUJ46y8Veu6aHAv/WVsYU08yt+FXjk1MlLWeCqyM4BgJFTiC2PrQM
 R4htwuXlwZTo2O/BYctLOwKNFbpX0je6l/id1ZR2NmsnPT4WWHWgsw==
 =lmAL
------END PGP PUBLIC KEY BLOCK-----') As pubkey) As keys;" )
+-----END PGP PUBLIC KEY BLOCK-----') As pubkey) As keys;"
+end
 
-    $i +=1
+def generate_records(no_of_records)
+  partners = %w(Marriott  Hotels  Room77  ORBITZ  Priceline  Booking  Expedia  Tingo)
+
+  file = open_file("tripadvisor.sql")
+  $i = 0
+  $group_count = 10000
+  while $i < no_of_records do
+    values = "";
+    counts_per_insert = [$group_count, no_of_records].min
+    insert_sql = insert_statement() + values_expression(counts_per_insert, partners, values) + public_key_cross_join()
+    file.puts insert_sql
+    $i +=counts_per_insert
   end
   file.flush
 end
@@ -147,7 +170,7 @@ BUKsfe4jIJJHyOF6/NigN6N3z14vpUYBGqv7hKATZSsnIE742N7pRqW/pxfWJvd8
 4jQoPKkXi/55f553KpBakA8rfr6Gmne+xwvhOMu7ZUZIxfgEAYPGgeGH6N4xkpw0
 XCAryD+vmiJS977gJQkpUV5HUyurQHgsWohaedT/90rz3poWIN//84uHvJZBZN4P
 EQkDwea9zX8DEmATABEBAAEAB/9jpoeIRCNwgpemMF5KNAcOl4CggNJoeTucxkcW
-7j+jhrJUOFhQPGDeXW05NCZSH0PYEEOQyzT/OHrmPrffo1j4sYiG81M1QjCQ0Xt+
+7j+jhrJUOFhQPGDeXW05NCZSH0PYEEOQyzT/OHrmPrffo1j4sYiG81M1QjtaCQ0Xt+
 N7cJZEXWnHSXMIlRoBrYblOXOpC5AtD6eUdictfx5/O3u/iMO+Dt4XCDteGHXMXH
 QfrKr/tqSSpCFQeQFPSwHl267wyZKDL9RidWZh7o1U9GYGo/xxhekjtm///4OmIE
 GJ8YbnBRpNvog6FIp16L8Bn6NTi3EPgDQIr25mhfOyWWtzHOdvsu5VuQVSCzYMtx
